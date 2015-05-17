@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html ng-app="MainApp">
+    <head>
+        <title>TODO supply a title</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script type="text/javascript" src="js/angular.min.js"></script>
+        <script type="text/javascript"  src="js/angular-route.min.js"></script>
+        <script src="script.js"></script> 
+         <base href="/todoList/index.html">
+        
+         
+    </head>
+    <body ng-controller="MCtrl">
+        <header>
+            <nav class="navbar navbar-default">
+            <div class="container">
+                <div class="navbar-header">
+                    <a class="navbar-brand" href="/">Angular Routing Example</a>
+                </div>
+
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="list"><i class="fa fa-home"></i> My List</a></li>
+                    <li><a href="weather"><i class="fa fa-shield"></i> Weather</a></li>
+                    <li><a href="photos"><i class="fa fa-comment"></i> Photos</a></li>
+                </ul>
+            </div>
+            </nav>
+        </header>
+
+         <!--MAIN CONTENT AND INJECTED VIEWS--> 
+         <div id="main">
+             <div ng-view=""></div>
+            
+
+<!--             angular templating 
+             this is where content will be injected -->
+
+        </div>
+
+   
+
+    </body>
+</html>
