@@ -6,3 +6,13 @@ and open the template in the editor.
 --><h1 ng-bind="title"></h1>
 
 <p ng-bind="message"><strong></strong></p>
+Date: <input type="text"><br>
+Item: <input ng-model="taskadd" type="text"><br>
+<button ng-click="addList()">Add</button>
+
+<ol>
+    <li ng-repeat="x in tasks">
+        
+        <input  ng-dblclick="makeIt(x)" type="text" ng-model="x"/><span ng-click="">Complete</span>
+    </li>
+</ol>

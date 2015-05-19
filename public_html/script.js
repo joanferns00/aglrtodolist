@@ -2,6 +2,7 @@
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
+ * Sources used: https://scotch.io/tutorials/single-page-apps-with-angularjs-routing-and-templating
  */
 
 
@@ -54,7 +55,25 @@ function($routeProvider, $locationProvider){
 mist.controller("MCtrl", function($scope){
         // create a message to display in our view
         $scope.title = 'My List';   
-        $scope.message = 'Start creating your list';   
+        $scope.message = 'Start creating your list';  
+        $scope.taskadd = "";
+        $scope.tasks  = ["Make bed", "Watch TV"];
+        $scope.addList = function(){
+            console.log("going to add to the list");
+            $scope.tasks.unshift($scope.taskadd);
+        };
+        
+        $scope.makeIt = function(item){
+            
+//            $scope.tasks.indexOf(item);
+            $scope.tasks.splice($scope.tasks.indexOf(item), 1)
+            
+            
+            
+        };
+
+        
+        
 });
 
 mist.controller("ACtrl", function($scope){
