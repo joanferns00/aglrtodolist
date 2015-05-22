@@ -8,11 +8,19 @@ and open the template in the editor.
 <p ng-bind="message"><strong></strong></p>
 Date: <input type="text"><br>
 Item: <input ng-model="taskadd" type="text"><br>
-<button ng-click="addList()">Add</button>
-
+<button ng-click="addItem()">Add</button>
+<!--        <input ng-dblclick="makeIt(x)" type="text" ng-model="x"/>
+        <span ng-click="strikeIt(x)">Complete</span>-->
 <ol>
-    <li ng-repeat="x in tasks">
+    <li ng-repeat="x in tasks" ng-class="{'strikeOut': isChecked}">
+        <input type="checkbox"
+               ng-model="isChecked"
+               />
+        <span ng-bind="x"></span><a ng-click="delItem(x)">[X]</a>
         
-        <input  ng-dblclick="makeIt(x)" type="text" ng-model="x"/><span ng-click="">Complete</span>
     </li>
 </ol>
+
+<!--Sources
+http://jsfiddle.net/mrajcok/eTTZj/
+-->
