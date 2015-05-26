@@ -66,7 +66,7 @@ mist.controller("MCtrl", function($scope){
             //if exists, dont add to the list.
             var test = $scope.tasks;
             
-            console.log(test.indexOf($scope.taskadd) === -1);
+//            console.log(test.indexOf($scope.taskadd) === -1);
             if(test.indexOf($scope.taskadd) === -1){
                 $scope.tasks.unshift($scope.taskadd);
             }
@@ -94,19 +94,134 @@ mist.controller("MCtrl", function($scope){
         };
 });
 
+mist.directive("simpleChart", function($window, $http){
+    return{
+        restrict: "EA",
+        template: "<svg width='750' height='200'></svg>",
+        link: function(scope, elem, attrs){
+           var salesDataToPlot=scope[attrs.chartData];
+           var padding = 20;
+           var pathClass="path";
+           var xScale, yScale, xAxisGen, yAxisGen, lineFun;  
+           
+           var d3 = $window.d3;
+           var rawSvg=elem.find('svg');
+           var svg = d3.select(rawSvg[0]);
+           function setChartParameters(){
+               
+               xScale = d3.scale.linear()
+                   .domain([salesDataToPlot[0].x, salesDataToPlot[salesDataToPlot.length-1].x])
+                   .range([padding + 5, rawSvg.attr("width") - padding]);
+
+               yScale = d3.scale.linear()
+                   .domain([0, d3.max(salesDataToPlot, function (d) {
+                       return d.y;
+                   })])
+                   .range([rawSvg.attr("height") - padding, 0]);
+
+               xAxisGen = d3.svg.axis()
+                   .scale(xScale)
+                   .orient("bottom")
+                   .ticks(salesDataToPlot.length - 1);
+
+               yAxisGen = d3.svg.axis()
+                   .scale(yScale)
+                   .orient("left")
+                   .ticks(5);
+
+               lineFun = d3.svg.line()
+                   .x(function (d) {
+                       return xScale(d.x);
+                   })
+                   .y(function (d) {
+                       return yScale(d.y);
+                   })
+                   .interpolate("basis");               
+           }
+         function drawLineChart() {
+               setChartParameters();
+               svg.append("svg:g")
+                   .attr("class", "x axis")
+                   .attr("transform", "translate(0,180)")
+                   .call(xAxisGen);
+
+               svg.append("svg:g")
+                   .attr("class", "y axis")
+                   .attr("transform", "translate(20,0)")
+                   .call(yAxisGen);
+
+               svg.append("svg:path")
+                   .attr({
+                       d: lineFun(salesDataToPlot),
+                       "stroke": "blue",
+                       "stroke-width": 2,
+                       "fill": "none",
+                       "class": pathClass
+                   });
+           }      
+           
+           
+        $http.get("http://api.openweathermap.org/data/2.5/forecast?q=94040,us&mode=json")
+                .success(function(data, status, headers, config){
+                    
+                    for(var i=0; i<data.list.length; i++){
+                        scope.lineData.push({x: i, y: (data.list[i].main.temp-272.15)});
+                    }
+                    drawLineChart();
+                })
+                .error(function(data, status, headers, config){
+                    console.log("Sorry we encountered an error");
+                    console.log(data);
+                    console.log(status);
+                    console.log(headers);
+                    console.log(config);
+                });           
+        }
+    };
+    
+});
 mist.controller("ACtrl", function($scope, $http){
+//        $scope.lineData = [{
+//          x: 1,
+//          y: 5
+//        }, {
+//          x: 20,
+//          y: 20
+//        }, {
+//          x: 40,
+//          y: 10
+//        }, {
+//          x: 60,
+//          y: 40
+//        }, {
+//          x: 80,
+//          y: 5
+//        }, {
+//          x: 100,
+//          y: 60
+//        }];    
+//    
+    $scope.lineData = new Array();
+    $scope.weatherData = new Array();
+    
+    
         // create a message to display in our view
         $scope.title = 'Weather';   
         $scope.message = 'Look up weater in your city';   
-        $http.get("http://api.openweathermap.org/data/2.5/weather?zip=94040,us")
-                .success(function(data, status, headers, config){
-                    console.log("Data from weather service");
-            console.log(data);
-            //place data in 
-                })
-                .error(function(data, status, headers, config){});
-        
-        
+//        $http.get("http://api.openweathermap.org/data/2.5/forecast?q=94040,us&mode=json")
+//                .success(function(data, status, headers, config){
+////                    console.log(data);
+////                for(var i=1; i<data.list.length; i++){
+////                $scope.weatherData.push({x: i, y: data.list[i].main.temp});
+////                }
+//                for(var i=1; i<10; i++){
+//                $scope.lineData.push({x: i*10, y: i*10+5});
+//                }
+////                console.log($scope.weatherData);
+//    
+//            //place data in 
+//                })
+//                .error(function(data, status, headers, config){});
 });
 
 mist.controller("CCtrl", function($scope){
