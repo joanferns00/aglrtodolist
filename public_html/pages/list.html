@@ -11,8 +11,11 @@ Item: <input ng-model="taskadd" type="text" ng-enter="addItem()" ><br>
 <button ng-click="addItem()">Add</button>
 <!--        <input ng-dblclick="makeIt(x)" type="text" ng-model="x"/>
         <span ng-click="strikeIt(x)">Complete</span>-->
+<!--//Search in the list-->
+<br>
+<label>Search: <input ng-model="srchTsk"></label>
 <ol>
-    <li ng-repeat="x in tasks" ng-class="{'strikeOut': isChecked}">
+    <li ng-repeat="x in tasks | filter: srchTsk" ng-class="{'strikeOut': isChecked}">
         <input type="checkbox"
                ng-model="isChecked"
                />

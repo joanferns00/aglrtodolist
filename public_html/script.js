@@ -6,7 +6,7 @@
  */
 
 
-var mist = angular.module("MainApp", ['ngRoute']);
+var mist = angular.module("MainApp", ['ngRoute','myFilters']);
 mist.directive('ngEnter', function(){
     return function(scope, element, attrs){
         element.bind("keydown press", function(event){
@@ -48,7 +48,9 @@ function($routeProvider, $locationProvider){
             .when('/photos', {
                 templateUrl : 'pages/photos.html',
                 controller  : 'CCtrl'
-            });
+            })
+            .otherwise({ 
+                redirectTo: '/'});
             
               // use the HTML5 History API
         $locationProvider.html5Mode(true);
@@ -94,6 +96,13 @@ mist.controller("MCtrl", function($scope){
         };
 });
 
+
+mist.directive('myCustomer', function(){
+    return{
+        restrict: 'E',
+        template: 'Name'
+    };
+});
 mist.directive("simpleChart", function($window, $http){
     return{
         restrict: "EA",
@@ -127,7 +136,7 @@ mist.directive("simpleChart", function($window, $http){
                yAxisGen = d3.svg.axis()
                    .scale(yScale)
                    .orient("left")
-                   .ticks(5);
+                   .ticks(10);
 
                lineFun = d3.svg.line()
                    .x(function (d) {
@@ -139,11 +148,17 @@ mist.directive("simpleChart", function($window, $http){
                    .interpolate("basis");               
            }
          function drawLineChart() {
-               setChartParameters();
-               svg.append("svg:g")
+                setChartParameters();
+                svg.append("svg:g")
                    .attr("class", "x axis")
                    .attr("transform", "translate(0,180)")
                    .call(xAxisGen);
+           
+                svg.append("text")      // text label for the x axis
+                    .attr("x", 350 )
+                    .attr("y",  170 )
+                    .style("text-anchor", "middle")
+                    .text("Date");
 
                svg.append("svg:g")
                    .attr("class", "y axis")
@@ -163,9 +178,10 @@ mist.directive("simpleChart", function($window, $http){
            
         $http.get("http://api.openweathermap.org/data/2.5/forecast?q=94040,us&mode=json")
                 .success(function(data, status, headers, config){
-                    
+                    console.log(data);
                     for(var i=0; i<data.list.length; i++){
-                        scope.lineData.push({x: i, y: (data.list[i].main.temp-272.15)});
+                        scope.lineData.push({x: i , y: (data.list[i].main.temp-272.15)});
+                //  -457.87  
                     }
                     drawLineChart();
                 })
@@ -207,7 +223,7 @@ mist.controller("ACtrl", function($scope, $http){
     
         // create a message to display in our view
         $scope.title = 'Weather';   
-        $scope.message = 'Look up weater in your city';   
+        $scope.message = 'Look up weather in your city';   
 //        $http.get("http://api.openweathermap.org/data/2.5/forecast?q=94040,us&mode=json")
 //                .success(function(data, status, headers, config){
 ////                    console.log(data);
@@ -224,8 +240,49 @@ mist.controller("ACtrl", function($scope, $http){
 //                .error(function(data, status, headers, config){});
 });
 
+angular.module('myFilters', []).
+filter('customFilter', function () {
+    return function (images,filter) {
+        var results = [];
+        console.log(filter);
+        if(!filter.category) {
+            return images;
+        }
+        angular.forEach(images, function(images) {
+                results.push(images);
+        });
+        return results;
+    };
+});
+
 mist.controller("CCtrl", function($scope){
+    
+    $scope.showFilter = function() {
+        console.log($scope.filter)
+    }    
+    
+    //              source: http://codepen.io/joshadamous/pen/CJmIB
+    //              //http://jsfiddle.net/xujihui1985/9yk7a6v3/2/
         // create a message to display in our view
         $scope.title = 'My Photos';   
-        $scope.message = 'Here are the pics!';   
+        $scope.message = 'Here are the pics!';  
+        $scope.images = [
+            {category : 'High', image : 'img/1.png', description : 'Random Photo', stars : '4/5'},
+            {category : 'Medium', image : 'img/2.png', description : 'Sports Photo', stars : '3/5'}
+        ];        
+        $scope.currentImage = _.first($scope.images);
+        $scope.imageCategories = _.uniq(_.pluck($scope.images, 'category'));
+        $scope.setCurrentImage = function(image) {
+            console.log("clicked current image");
+          $scope.currentImage = image;
+        };        
+                $scope.valueSelected = function(value){
+                    console.log(value)
+                    if(value === null){
+                        $scope.catselect = undefined;
+                        
+                    }
+                };        
+//        http://jsfiddle.net/xujihui1985/9yk7a6v3/2/
+        
 });

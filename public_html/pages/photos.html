@@ -5,4 +5,20 @@ To change this template file, choose Tools | Templates
 and open the template in the editor.
 --><h1 ng-bind="title"></h1>
 
-<p ng-bind="message"><strong></strong></p>
+    <p ng-bind="message"><strong></strong></p>
+
+    <img ng-src="{{currentImage.image}}" alt="{{currentImage.description}}"/>
+    <h3>{{currentImage.description}}</h3>
+    <span>{{currentImage.stars}}</span>
+    <select ng-model="catselect"
+           ng-options="category for category in imageCategories"
+           ng-change="valueSelected(catselect)">
+     <option value>All</option>
+    </select>
+<!--<p>Select <input ng-model="categories"/></p>-->
+    <span>Select a rating</span>
+    <ul class="list">
+      <li ng-repeat="image in images | filter : catselect" ng-click="setCurrentImage(image)">
+        <img ng-src="{{image.image}}" alt="{{image.description}}"/>
+      </li>
+    </ul><!-- End of List -->
