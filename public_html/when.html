@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>TODO supply a title</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <div>TODO write content</div>
+        <script src="js/jquery-2.1.4.min.js"></script>
+        <script type="text/javascript">
+
+            $(document).ready(function () {
+                var promise = $.ajax("http://api.openweathermap.org/data/2.5/forecast?q=95060,us&mode=json");
+                function myCall() {
+                    return function () {
+                        console.log("Inside Mycall");
+                    };
+                }
+
+                var c1 = myCall();
+                c1();
+
+                promise.then(function (resp) {
+                    console.log(resp);
+                });
+
+            });
+        </script>
+    </body>
+</html>
