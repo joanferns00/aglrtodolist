@@ -7,7 +7,7 @@ and open the template in the editor.
 
 <p ng-bind="message"><strong></strong></p>
 Date: <input type="text"><br>
-Item: <input ng-model="taskadd" type="text" ng-enter="addItem()" ><br>
+Item: <input ng-model="newItem.item" type="text" ng-enter="addItem()" ><br>
 <button ng-click="addItem()">Add</button>
 <!--        <input ng-dblclick="makeIt(x)" type="text" ng-model="x"/>
         <span ng-click="strikeIt(x)">Complete</span>-->
@@ -15,11 +15,19 @@ Item: <input ng-model="taskadd" type="text" ng-enter="addItem()" ><br>
 <br>
 <label>Search: <input ng-model="srchTsk"></label>
 <ol>
-    <li ng-repeat="x in tasks | filter: srchTsk" ng-class="{'strikeOut': isChecked}">
-        <input type="checkbox"
-               ng-model="isChecked"
-               />
-        <span ng-bind="x"></span><a ng-click="delItem(x)">[X]</a>
+    <!--//ng-dblclick="changeView(editMode)"-->
+    <li ng-repeat="x in tasks| filter: srchTsk"  ng-class="{'strikeOut': (x.status === true)}">
+        <p ng-hide="editMode[x.id]">
+            <input type="checkbox" ng-click="editStatus(x)"/>
+            <span ng-bind="x.item"
+                  ng-dblclick="changeView(x)"></span>
+            <a ng-click="delItem(x.id)">[X]</a>
+        </p>
+        <p ng-show="editMode[x.id]">
+            <input type="text" ng-blur="editItem(x);
+                                changeView(x)" ng-model="x.item"/>
+        </p>
+
     </li>
 </ol>
 
