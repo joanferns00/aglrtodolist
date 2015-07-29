@@ -6,8 +6,18 @@ and open the template in the editor.
 -->
 <h1 ng-bind="title"></h1>
 
-<p ng-bind="message"></p>
-<weather-today info="weather"></weather-today>
+<label ng-bind="message" for="selectcity"></label><select name="selectcity" ng-model="selected" ng-options="key as value for (key , value) in cities"></select>
+<button>Go!</button>
+
+
+<input type="radio" ng-model="tempformat" value="C"> Celcius
+<input type="radio" ng-model="tempformat" value="F"> Farenheit
+<div>
+    <weather-today info="weather"></weather-today>
+    <weather-six info="weather16"></weather-six>
+</div>
+<hr>
+<h2>Hour-by-hour forecast</h2>
 <!--<my-customer></my-customer>-->
 <div simple-chart chart-data="lineData"></div>
 

@@ -5,9 +5,9 @@ To change this template file, choose Tools | Templates
 and open the template in the editor.
 --><h1 ng-bind="title"></h1>
 
-    <p ng-bind="message"><strong></strong></p>
+<p><span ng-bind="message"><strong></strong></span>: <a ng-click="s()">Small</a> | <a ng-click="m()">Medium</a> | <a ng-click="l()">Large</a></p>
 
-    <img ng-src="{{currentImage.image}}" alt="{{currentImage.description}}"/>
+    <img ng-src="{{currentImage.image}}" alt="{{currentImage.description}}" ng-class="size"/>
     <h3>{{currentImage.description}}</h3>
     <span>{{currentImage.stars}}</span>
     <select ng-model="catselect"
@@ -17,8 +17,8 @@ and open the template in the editor.
     </select>
 <!--<p>Select <input ng-model="categories"/></p>-->
     <span>Select a rating</span>
-    <ul class="list">
+    <ul class="photosmenu">
       <li ng-repeat="image in images | filter : catselect" ng-click="setCurrentImage(image)">
-        <img ng-src="{{image.image}}" alt="{{image.description}}"/>
+          <img ng-src="{{image.image}}" alt="{{image.description}}" width="300px"/>
       </li>
     </ul><!-- End of List -->

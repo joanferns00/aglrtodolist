@@ -6,14 +6,16 @@ and open the template in the editor.
 --><h1 ng-bind="title"></h1>
 
 <p ng-bind="message"><strong></strong></p>
-Date: <input type="text"><br>
-Item: <input ng-model="newItem.item" type="text" ng-enter="addItem()" ><br>
+
+<label>Search: </label><input ng-model="srchTsk"><br>
+<!--Date: <input type="text"><br>-->
+<label>To Do&nbsp;&nbsp;&nbsp;&nbsp;</label><input ng-model="newItem.item" type="text" ng-enter="addItem()" >
 <button ng-click="addItem()">Add</button>
 <!--        <input ng-dblclick="makeIt(x)" type="text" ng-model="x"/>
         <span ng-click="strikeIt(x)">Complete</span>-->
 <!--//Search in the list-->
 <br>
-<label>Search: <input ng-model="srchTsk"></label>
+
 <ol>
     <!--//ng-dblclick="changeView(editMode)"-->
     <li ng-repeat="x in tasks| filter: srchTsk"  ng-class="{'strikeOut': (x.status === true)}">

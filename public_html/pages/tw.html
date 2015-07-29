@@ -1,20 +1,45 @@
-<div>
-    <h1>Today, {{info.city.name}}</h1>
-    <p>85F</p>
-    <figure>
-        <img src="img_pulpit.jpg" alt="Icon Here" width="304" height="228">
-        <figcaption>{{}}</figcaption>
-    </figure>
-    <p>Cloudiness {{}}%</p>
-    <p>See More</p>
-    <div>
-        <ul>
-            <li>Humidity: {{}}%</li>
-            <li>Pressure: {{}}hpa</li>
-            <li>MAX Temp: {{}}F</li>
-            <li>MIN Temp: {{}}F</li>
-            <li>Sunrise: {{}}</li>
-            <li>Sunset: {{}}</li>
-        </ul>
-    </div>
+<div style="width: 20%; float: left;">
+    <h1>Right Now in {{info.name| uppercase}}, {{info.sys.country| uppercase}}</h1>
+
+    <ul class="menuHoz">
+        <li >
+            <div class="boxes">
+                <div class="box">
+            <h4>{{info.dt| mytime}}</h4>
+                <p>{{info.main.temp}}C</p>
+            <figure>
+                <img ng-src="http://openweathermap.org/img/w/{{info.weather[0].icon}}.png"
+                     title="{{info.weather[0].description}}" alt="{{info.weather[0].description}}">
+                <figcaption>{{info.weather[0].description}}</figcaption>
+            </figure>
+            <p>Cloudiness {{info.clouds.all}}%</p>
+            <p>Chance of Rain? {{i.rain? i.rain : 0}}</p>
+            <p ng-click="sm = !sm">See More</p>                        
+                </div>
+                <div class="box" ng-show="sm">
+                    
+                
+                <ul>
+                    <li>Humidity: {{info.main.humidity}}%</li>
+                    <li>Pressure: {{info.main.pressure}}hpa</li>
+                    <li>MAX Temp: {{info.main.temp_max}}F</li>
+                    <li>MIN Temp: {{info.temp.temp_min}}F</li>
+                    <li>Sunrise: {{info.sys.sunrise| mytime}}</li>
+                    <li>Sunset: {{info.sys.sunset| mytime}}</li>
+                    <li>Wind Speed: {{info.wind.speed}}</li>
+                    <li>Wind Dir: {{info.wind.deg}}</li>
+                </ul>
+                                 
+                </div>
+            </div>
+            
+            
+               
+        </li>
+    </ul>
+
+
+
+
+
 </div>
