@@ -30,17 +30,19 @@ and open the template in the editor.
     <body>
         <div>TODO write content</div>
         <script>
-            var data = [{"date": "2012-03-20", "total": 3},
-                {"date": "2012-03-21", "total": 8},
-                {"date": "2012-03-22", "total": 2},
-                {"date": "2012-03-23", "total": 10},
-                {"date": "2012-03-24", "total": 3},
-                {"date": "2012-03-25", "total": 20},
-                {"date": "2012-03-26", "total": 12}];
+            var data = [{"date": 1435708800, "total": 3},
+                {"date": 1435719600, "total": 8},
+                {"date": 1435730400, "total": 2},
+                {"date": 1435741200, "total": 10},
+                {"date": 1435752000, "total": 3},
+                {"date": 1435762800, "total": 20},
+                {"date": 1435773600, "total": 12}];
 
             var margin = {top: 40, right: 40, bottom: 40, left: 40},
             width = 600,
                     height = 500;
+            
+          
 
             var x = d3.time.scale()
                     .domain([new Date(data[0].date), d3.time.day.offset(new Date(data[data.length - 1].date), 1)])
@@ -64,8 +66,11 @@ and open the template in the editor.
             var xAxis = d3.svg.axis()
                     .scale(x)
                     .orient('bottom')
-                    .ticks(d3.time.days, 1)
-                    .tickFormat(d3.time.format('%a %d'))
+
+                        .ticks(d3.time.hour, 3)
+                        .tickFormat(d3.time.format("%a %d %H:%M"))
+//                    .ticks(d3.time.days, 1)
+//                    .tickFormat(d3.time.format('%a %d'))
                     .tickSize(0)
                     .tickPadding(8);
 
@@ -96,6 +101,7 @@ and open the template in the editor.
 //                    .attr('stroke', 'blue')
 //                    .attr('stroke-width', 2)
 //                    .attr('fill', 'none');
+
 
 
             svg.selectAll('.chart')

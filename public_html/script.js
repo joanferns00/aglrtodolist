@@ -216,7 +216,6 @@ mist.controller("MCtrl", function ($scope, ListService) {
     //Change the view from input to span
     $scope.changeView = function (x) {
         $scope.editMode[x.id] = !$scope.editMode[x.id];
-        //|| true
 //        console.log($scope.editMode);
 //        $scope.editMode = !$scope.editMode;
     };
@@ -225,15 +224,21 @@ mist.directive('weatherSix', function ($timeout) {
     return {
         restrict: 'E',
         templateUrl: "pages/sw.html",
+        controller: 'ACtrl',
         scope: {info: '='},
-        link: function (scope, element, attr) {
+        link: function (scope, element, attrs, controller) {
+            console.log(scope.tempformat);
+            //Initialize the directive after the ajax call is made.
+            scope.$watch('info', function (nv) {
+                if (scope.info !== undefined) {
+                    scope.showFwd();
+                }
+            });
             var arrlength = 16;
             var incSize = 4;
-//            var count = 0;
             scope.currentIndex = 0;
             var no = Math.ceil(arrlength / incSize);
             scope.hideAll = function () {
-
                 scope.info.list.forEach(function (i) {
                     i.visible = false;
                 });
@@ -258,44 +263,6 @@ mist.directive('weatherSix', function ($timeout) {
                     }
                 }
             };
-//
-//            scope.showFwd = function () {
-//                scope.currentIndex < scope.info.list.length - 1 ? scope.currentIndex++ : scope.currentIndex = 0;
-//            };
-//
-//            scope.showBkd = function () {
-//                scope.currentIndex > 0 ? scope.currentIndex-- : scope.currentIndex = scope.info.list.length - 1;
-//            };
-//
-//
-            scope.$watch('currentIndex', function (newValue) {
-                if (newValue) {
-                    scope.info.list.forEach(function (i) {
-//                        i.visible = false;
-                    });
-//                    scope.info.list[scope.currentIndex].visible = true;
-                }
-            });
-            /* Start: For Automatic slideshow*/
-
-//            var timer;
-//
-//            var sliderFunc = function () {
-//                timer = $timeout(function () {
-//                    scope.next();
-//                    timer = $timeout(sliderFunc, 5000);
-//                }, 5000);
-//            };
-//
-//            sliderFunc();
-//
-//            scope.$on('$destroy', function () {
-//                $timeout.cancel(timer);
-//            });
-
-            /* End : For Automatic slideshow*/
-
-
         }
     };
 });
@@ -314,6 +281,10 @@ mist.directive("simpleChart", function ($window, WeatherService) {
         restrict: "EA",
         template: "<svg></svg>",
         link: function (scope, elem, attrs) {
+
+//            scope.$watch('tempformat', function (nv) {
+//                console.log(nv);
+//            });
 
 
             var wd = scope[attrs.chartData];
@@ -334,17 +305,23 @@ mist.directive("simpleChart", function ($window, WeatherService) {
             var xScale, yScale, xAxisGen, yAxisGen, lineFun;
             function drawLineChart() {
 //                console.log(weatherData[0].x);
-//                console.log(new Date(weatherData[0].x * 1000));
+
+
+                //return date.toLocaleTimeString() + " " + date.toLocaleDateString();
 
                 //X scale
                 var xScale = d3.time.scale()
                         .domain([wd[0].date,
-                            d3.time.day.offset(wd[wd.length - 1].date, 1)])
-                        .rangeRound([0, width - margin.left - margin.right]);
+//                            d3.time.day.offset(wd[wd.length - 1].date, 1)
+                            wd[wd.length - 1].date
+
+                        ])
+                        .rangeRound([0, width - margin.left - margin.right])
+                        ;
                 //Y scale
                 var yScale = d3.scale.linear()
                         .domain([d3.min(wd, function (d) {
-                                return d.temp
+                                return d.temp;
                             }), d3.max(wd, function (d) {
                                 return d.temp;
                             })])
@@ -428,7 +405,7 @@ mist.directive("simpleChart", function ($window, WeatherService) {
 
             WeatherService.get5dayData().then(
                     function (data) {
-//                        console.log(data);
+                        console.log(data);
                         for (var i = 0; i < data.list.length; i++) {
                             var t = data.list[i];
                             //(data.list[i].dt_txt).replace(/ /g, "T")
@@ -444,22 +421,26 @@ mist.directive("simpleChart", function ($window, WeatherService) {
         }
     };
 });
+
+function KToC(K, U) {
+    if (U === "C") {
+        return K - 272.15;
+    }
+    else if (U === "F") {
+        return (K * 1.8) - 459.67;
+    }
+
+
+}
+//ACtrl
 mist.controller("ACtrl", function ($scope, WeatherService) {
     $scope.lineData = new Array();
     $scope.weatherData = new Array();
     // create a message to display in our view
     $scope.title = 'Weather';
     $scope.message = 'Weather in your city';
-//
-//    < option > Chicago IL < /option>
-//            < option > New York City, NY < /option>
-//            < option > San Francisco, CA < /option>
-//            < option > Denver, CO < /option>
-//            < option > Honolulu, Hawai < /option>
-//            < option > Juneau, Alaska < /option>
-
     $scope.selected;
-
+//    $scope.weather16 = null;
     $scope.cities = {
         "Chicago": "Chicago, IL",
         "New York": "New York City, NY",
@@ -467,26 +448,27 @@ mist.controller("ACtrl", function ($scope, WeatherService) {
         "Denver": "Denver, CO",
         "Honolulu": "Honolulu, Hawai",
         "Juneau": "Juneau, Alaska"
-//        {"Chicago": "Chicago, IL"},
-//        {"New York": "New York City, NY"},
-//        {"San Francisco": "San Francisco, CA"},
-//        {"Denver": "Denver, CO"},
-//        {"Honolulu": "Honolulu, Hawai"},
-//        {"Juneau": "Juneau, Alaska"}
-
     };
     $scope.tempformat = "C";
+    $scope.$watch('tempformat', function (nv) {
+        if ($scope.tempformat === "C") {
+            //C-272.15
+        }
+        else if ($scope.tempformat === "F") {
+            //(K × 1.8) - 459.67
+        }
+    });
     WeatherService.getData().then(
             function (data) {
                 //initialize data
                 //Convert temp to Farenheit
                 data.list.forEach(function (element, index, array) {
                     for (var key in element.temp) {
-                        element.temp[key] = Math.round(element.temp[key] - 272.15);
+                        element.temp[key] = Math.round(KToC(element.temp[key], "C"));
                     }
                 });
                 $scope.weather16 = data;
-                console.log(data);
+//                console.log(data);
             }
     );
     WeatherService.getTodaysData().then(
@@ -494,7 +476,7 @@ mist.controller("ACtrl", function ($scope, WeatherService) {
                 $scope.weather = data;
                 for (var key in data.main) {
                     if (key.indexOf("temp") !== -1) {
-                        data.main[key] = Math.round(data.main[key] - 272.15);
+                        data.main[key] = Math.round(KToC(data.main[key], "C"));
                     }
                 }
             }
@@ -575,3 +557,6 @@ mist.controller("CCtrl", function ($scope) {
     //        http://jsfiddle.net/xujihui1985/9yk7a6v3/2/
 
 });
+
+
+
