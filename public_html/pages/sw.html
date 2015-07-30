@@ -1,0 +1,53 @@
+<div>
+    
+    
+    <div class="boxes">
+        <div class="box"> <button ng-click="showBkd()">&LeftTriangleBar;</button> </div>
+        <div class="box">
+           <h1>16-day forecast</h1> 
+    
+    <ul class="menuHoz">
+        <!--ng-class="{{$index}} <5 ? 'active' : ''"-->
+        <li ng-repeat="i in info.list" ng-show="i.visible">
+            
+            <div class="boxes">
+                <div class="box">
+                    
+            <h4>{{i.dt | mydate}}</h4>
+            <p>{{i.temp.day}}</p>
+            <figure>
+                <img ng-src="http://openweathermap.org/img/w/{{i.weather[0].icon}}.png"
+                     title="{{i.weather[0].description}}" 
+                     alt="{{i.weather[0].description}}">
+                <figcaption>{{i.weather[0].description}}</figcaption>
+            </figure>
+            <p>Cloudiness {{i.clouds}}%</p>
+            <p>Chance of Rain? {{i.rain? i.rain : 0}} </p>
+    <p ng-click="sm = !sm">See More</p>                    
+                    
+                </div>
+                <div class="box" ng-show="sm">
+                    
+                <ul>
+                    <li>Morning: {{i.temp.morn}}F</li>
+                    <li>Evening: {{i.temp.eve}}F</li>
+                    <li>Night: {{i.temp.night}}F</li>
+                    <li>Wind: {{i.speed}}mph deg:{{i.deg}}</li>
+                    <li>Humidity: {{i.humidity}}%</li>
+                    <li>Pressure: {{i.pressure}}hpa</li>
+                    <li>MAX Temp: {{i.temp.max}}F</li>
+                    <li>MIN Temp: {{i.temp.min}}F</li>
+
+                </ul>                    
+                </div>
+            </div>
+            
+
+
+        </li>
+    </ul>            
+        </div>
+        <div class="box"><button ng-click="showFwd()">&RightTriangleBar;</button></div>
+    </div>
+
+</div>
