@@ -5,17 +5,19 @@ To change this template file, choose Tools | Templates
 and open the template in the editor.
 --><h1 ng-bind="title"></h1>
 
-<p ng-bind="message"><strong></strong></p>
 
-<label>Search: </label><input ng-model="srchTsk"><br>
+
+
+
 <!--Date: <input type="text"><br>-->
-<label>To Do&nbsp;&nbsp;&nbsp;&nbsp;</label><input ng-model="newItem.item" type="text" ng-enter="addItem()" >
-<button ng-click="addItem()">Add</button>
+<label>Enter Task </label><input ng-focus="reset()" ng-model="newItem.item" type="text" ng-enter="addItem()" >
+<button ng-click="addItem()">Add</button><span ng-bind="message"><strong></strong></span>
+
 <!--        <input ng-dblclick="makeIt(x)" type="text" ng-model="x"/>
         <span ng-click="strikeIt(x)">Complete</span>-->
 <!--//Search in the list-->
-<br>
-
+<br><br><br>
+<label>Search:&nbsp;&nbsp;&nbsp;&nbsp;</label><input ng-model="srchTsk"><br>
 <ol>
     <!--//ng-dblclick="changeView(editMode)"-->
     <li ng-repeat="x in tasks| filter: srchTsk"  ng-class="{'strikeOut': (x.status === true)}">
@@ -23,7 +25,7 @@ and open the template in the editor.
             <input type="checkbox" ng-click="editStatus(x)"/>
             <span ng-bind="x.item"
                   ng-dblclick="changeView(x)"></span>
-            <a ng-click="delItem(x.id)">[X]</a>
+            <a class="pointer" ng-click="delItem(x.id)">[X]</a>
         </p>
         <p ng-show="editMode[x.id]">
             <input type="text" ng-blur="editItem(x);

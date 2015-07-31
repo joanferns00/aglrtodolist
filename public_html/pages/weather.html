@@ -6,15 +6,13 @@ and open the template in the editor.
 -->
 <h1 ng-bind="title"></h1>
 
-<label ng-bind="message" for="selectcity"></label><select name="selectcity" ng-model="selected" ng-options="key as value for (key , value) in cities"></select>
-<button>Go!</button>
-
+<label ng-bind="message" for="selectcity"></label><select name="selectcity" ng-model="selectedcity" ng-options="key as value for (key , value) in cities"></select>
 
 <input type="radio" ng-model="tempformat" value="C"> Celcius
 <input type="radio" ng-model="tempformat" value="F"> Farenheit
 <div>
-    <weather-today info="weather"></weather-today>
-    <weather-six info="weather16"></weather-six>
+    <weather-today info="weather" tempformat="tempformat" selectedcity="selectedcity"></weather-today>
+    <weather-six info="weather16" tempformat="tempformat" selectedcity="selectedcity"></weather-six>
 </div>
 <hr>
 <h2>Hour-by-hour forecast</h2>

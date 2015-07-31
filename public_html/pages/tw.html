@@ -6,7 +6,7 @@
             <div class="boxes">
                 <div class="box">
             <h4>{{info.dt| mytime}}</h4>
-                <p>{{info.main.temp}}C</p>
+                <p>{{info.main.temp}}{{tempUnit}}</p>
             <figure>
                 <img ng-src="http://openweathermap.org/img/w/{{info.weather[0].icon}}.png"
                      title="{{info.weather[0].description}}" alt="{{info.weather[0].description}}">

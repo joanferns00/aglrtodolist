@@ -68,26 +68,26 @@ angular.module('myDTFilter', []).filter('mytime', function () {
 mist.factory('WeatherService', function ($http) {
     return {
         //Right Now
-        getTodaysData: function () {
-            return $http.get('http://api.openweathermap.org/data/2.5/weather?q=Chicago,US').then(function (result) {
+        getTodaysData: function (city) {
+            return $http.get('http://api.openweathermap.org/data/2.5/weather?q=' + city + ',US').then(function (result) {
                 return result.data;
             });
         },
         //5-days weather
-        get5dayData: function () {
-            return $http.get('http://api.openweathermap.org/data/2.5/forecast?q=Seattle,us&mode=json').then(function (result) {
+        get5dayData: function (city) {
+            return $http.get('http://api.openweathermap.org/data/2.5/forecast?q=' + city + ',us&mode=json').then(function (result) {
                 return result.data;
             });
         },
         //16-day weather
-        getData: function () {
+        getData: function (city) {
             //since $http.get returns a promise,
             //and promise.then() also returns a promise
             //that resolves to whatever value is returned in it's
             //callback argument, we can return that.
             //
             //http://api.openweathermap.org/data/2.5/forecast?q=60607&mode=json
-            return $http.get('http://api.openweathermap.org/data/2.5/forecast/daily?q=SantaCruz,US&mode=json&cnt=16').then(function (result) {
+            return $http.get('http://api.openweathermap.org/data/2.5/forecast/daily?q=' + city + ',US&mode=json&cnt=16').then(function (result) {
 
                 return result.data;
             });
@@ -118,7 +118,7 @@ mist.service('ListService', function () {
     };
     this.getByItem = function (item) {
         for (var i in list) {
-            if (list[i].item === item) {
+            if (list[i].item.toLowerCase() === item.toLowerCase()) {
                 return list[i];
             }
         }
@@ -186,10 +186,20 @@ mist.controller("MCtrl", function ($scope, ListService) {
     $scope.newItem = {};
     $scope.editMode = {};
     $scope.tasks = ListService.getAll();
+    //reset messages
+    $scope.reset = function () {
+        $scope.message = "";
+    };
     //Add the item
+
     $scope.addItem = function () {
+        var it = $scope.newItem.item;
+        if (it === undefined || it.trim().length === 0) {
+            $scope.message = "Please enter a task!";
+        }
+
         //if item does not exist
-        if (ListService.getByItem($scope.newItem) === null) {
+        else if (ListService.getByItem(it) === null) {
             //add it to the list
             ListService.save($scope.newItem);
             $scope.newItem = {};
@@ -220,17 +230,69 @@ mist.controller("MCtrl", function ($scope, ListService) {
 //        $scope.editMode = !$scope.editMode;
     };
 });
-mist.directive('weatherSix', function ($timeout) {
+mist.directive('weatherSix', function (WeatherService) {
     return {
         restrict: 'E',
         templateUrl: "pages/sw.html",
-        controller: 'ACtrl',
-        scope: {info: '='},
+        scope: {info: '=',
+            tempformat: '=',
+            selectedcity: '='},
         link: function (scope, element, attrs, controller) {
-            console.log(scope.tempformat);
+            scope.tempUnit = "C";
+            scope.$watch('selectedcity', function (nv) {
+                if (scope.info !== undefined) {
+                    //call the weather data for the city.
+                    WeatherService.getData(nv).then(
+                            function (data) {
+                                console.log("G");
+                                scope.info = data;
+                                //initialize data
+                                //Convert temp to Farenheit
+                                data.list.forEach(function (element, index, array) {
+                                    for (var key in element.temp) {
+                                        if (scope.tempUnit === "C") {
+                                            element.temp[key] = Math.round(KToC(element.temp[key], "C"));
+                                        }
+                                        else if (scope.tempUnit === "F") {
+                                            element.temp[key] = Math.round(KToC(element.temp[key], "F"));
+                                        }
+                                    }
+                                });
+                            },
+                            function (err) {
+                                console.log("Sorry we encountered an error " + err);
+                            }
+                    );
+                }
+            });
+            scope.$watch('tempformat', function (nv) {
+                if (scope.info !== undefined) {
+                    if (nv === "C") {
+                        //C-272.15
+                        scope.tempUnit = "C";
+                        //Convert temp to C
+                        scope.info.list.forEach(function (element, index, array) {
+                            for (var key in element.temp) {
+                                element.temp[key] = Math.round(FtoC(element.temp[key]));
+                            }
+                        });
+                    }
+                    else if (nv === "F") {
+                        scope.tempUnit = "F";
+                        //(K × 1.8) - 459.67
+                        //Convert temp to Farenheit
+                        scope.info.list.forEach(function (element, index, array) {
+                            for (var key in element.temp) {
+                                element.temp[key] = Math.round(CtoF(element.temp[key]));
+                            }
+                        });
+                    }
+                }
+            });
             //Initialize the directive after the ajax call is made.
             scope.$watch('info', function (nv) {
                 if (scope.info !== undefined) {
+                    scope.currentIndex = 0;
                     scope.showFwd();
                 }
             });
@@ -266,28 +328,153 @@ mist.directive('weatherSix', function ($timeout) {
         }
     };
 });
-mist.directive('weatherToday', function () {
+mist.directive('weatherToday', function (WeatherService) {
     return {
         restrict: 'E',
         templateUrl: "pages/tw.html",
-        scope: {info: '='
+        scope: {info: '=',
+            tempformat: '=',
+            selectedcity: '='
         },
         link: function (scope, element, attr) {
+            scope.tempUnit = "C";
+            scope.$watch('selectedcity', function (nv) {
+
+                if (scope.info !== undefined) {
+                    //call the weather data for the city.
+
+                    WeatherService.getTodaysData(nv).then(
+                            function (data) {
+                                scope.info = data;
+                                for (var key in data.main) {
+                                    if (key.indexOf("temp") !== -1) {
+                                        if (scope.tempUnit === "C") {
+                                            data.main[key] = Math.round(KToC(data.main[key], "C"));
+                                        }
+                                        else if (scope.tempUnit === "F") {
+                                            data.main[key] = Math.round(KToC(data.main[key], "F"));
+                                        }
+
+
+
+                                    }
+                                }
+                            },
+                            function (err) {
+                                console.log("Sorry we encountered an error " + err);
+                            }
+                    );
+                }
+            });
+            scope.$watch('tempformat', function (nv) {
+
+                if (scope.info !== undefined) {
+                    if (nv === "C") {
+                        //C-272.15
+                        scope.tempUnit = "C";
+
+                        for (var key in scope.info.main) {
+                            if (key.indexOf("temp") !== -1) {
+                                scope.info.main[key] = Math.round(FtoC(scope.info.main[key], "C"));
+                            }
+                        }
+
+                    }
+                    else if (nv === "F") {
+                        scope.tempUnit = "F";
+                        //(K × 1.8) - 459.67
+                        for (var key in scope.info.main) {
+                            if (key.indexOf("temp") !== -1) {
+                                scope.info.main[key] = Math.round(CtoF(scope.info.main[key], "C"));
+                            }
+                        }
+                    }
+                }
+            });
         }
     };
 });
 mist.directive("simpleChart", function ($window, WeatherService) {
+//    http://jsfiddle.net/ShBQw/
     return{
         restrict: "EA",
         template: "<svg></svg>",
         link: function (scope, elem, attrs) {
+            scope.$watch('tempformat', function (nv) {
+                if (scope.lineData !== undefined) {
+                    console.log("Going to convert the temerature for graph " + nv);
+//                    for (var i = 0; i < scope.lineData.length; i++) {
+//                        if (nv === "C") {
+//                            scope.lineData[i].temp = FtoC(scope.lineData[i].temp);
+//                        }
+//                        else if (nv === "F") {
+//                            scope.lineData[i].temp = CtoF(scope.lineData[i].temp);
+//                        }
+//                    }
 
-//            scope.$watch('tempformat', function (nv) {
-//                console.log(nv);
-//            });
 
+                    /**
+                     * Working code
+                     */
+                    //call the weather data for the city.
+                    WeatherService.get5dayData(nv).then(
+                            function (data) {
+                                scope.lineData = new Array();
+                                for (var i = 0; i < data.list.length; i++) {
+                                    var t = data.list[i];
+                                    if (nv === "C") {
+                                        //KToC
+                                        //Math.round(KToC(element.temp[key], "C"));
+                                        scope.lineData.push({date: gDate(t.dt), temp: Math.round(KToC(t.main.temp, "C"))});
+                                    }
+                                    if (nv === "F") {
+                                        scope.lineData.push({date: gDate(t.dt), temp: Math.round(KToC(t.main.temp, "F"))});
+                                    }
+
+                                    //  -457.87
+                                }
+                                wd = scope[attrs.chartData];
+                                emptyLineChart();
+                                initChart();
+                                drawLineChart();
+                            },
+                            function (err) {
+                                console.log("Sorry we encountered an error " + err);
+                            }
+                    );
+
+                    /**
+                     * Working code
+                     */
+                }
+            });
+
+            scope.$watch('selectedcity', function (nv) {
+                if (scope.lineData !== undefined) {
+                    //call the weather data for the city.
+                    WeatherService.get5dayData(nv).then(
+                            function (data) {
+                                scope.lineData = new Array();
+                                for (var i = 0; i < data.list.length; i++) {
+                                    var t = data.list[i];
+                                    //(data.list[i].dt_txt).replace(/ /g, "T")
+                                    scope.lineData.push({date: gDate(t.dt), temp: (t.main.temp - 272.15)});
+                                    //  -457.87
+                                }
+                                wd = scope[attrs.chartData];
+                                emptyLineChart();
+                                initChart();
+                                drawLineChart();
+                            },
+                            function (err) {
+                                console.log("Sorry we encountered an error " + err);
+                            }
+                    );
+                }
+            });
 
             var wd = scope[attrs.chartData];
+//            var wd = scope[attrs.chartData];
             //width and height
             var width = 1500, height = 200;
             var margin = {top: 40, right: 40, bottom: 40, left: 40};
@@ -303,18 +490,32 @@ mist.directive("simpleChart", function ($window, WeatherService) {
                     .append('g')
                     .attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')');
             var xScale, yScale, xAxisGen, yAxisGen, lineFun;
+            function initChart() {
+                d3 = $window.d3;
+                awSvg = elem.find('svg');
+                div = d3.select("body").append("div")
+                        .attr("class", "tooltip")
+                        .style("opacity", 0);
+                svg = d3.select(rawSvg[0])
+                        .attr("width", width)
+                        .attr("height", height)
+                        .append('g')
+                        .attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')');
+
+            }
+
+            function emptyLineChart() {
+                d3.selectAll("svg > *").remove();
+            }
             function drawLineChart() {
-//                console.log(weatherData[0].x);
-
-
-                //return date.toLocaleTimeString() + " " + date.toLocaleDateString();
-
                 //X scale
                 var xScale = d3.time.scale()
-                        .domain([wd[0].date,
+                        .domain([
+                            d3.time.hour.offset(wd[0].date, -1),
+//                    wd[0].date,
 //                            d3.time.day.offset(wd[wd.length - 1].date, 1)
-                            wd[wd.length - 1].date
-
+                            d3.time.hour.offset(wd[wd.length - 1].date, 6)
+//                            wd[wd.length - 1].date
                         ])
                         .rangeRound([0, width - margin.left - margin.right])
                         ;
@@ -356,12 +557,19 @@ mist.directive("simpleChart", function ($window, WeatherService) {
                         .call(yAxisGen);
                 svg.append("text")      // text label for the x axis
                         .attr("x", width / 2)
-                        .attr("y", height - margin.bottom)
+                        .attr("y", height - 60)
                         .text("Date");
                 svg.append("text")      // text label for the x axis
-                        .attr("x", margin.left)
-                        .attr("y", height / 2)
-                        .text("Temperature");
+//                        .attr("x", -40)
+//                        .attr("y", 0)
+                        .attr("transform", "translate(-25," + height / 2 + ")rotate(-90)")
+
+
+                        //transform="translate(-25,95)rotate(-90)"
+//                        .attr("transform", "rotate(90)")
+                        .text("Temperature (" + scope.tempformat + ")");
+
+
                 svg.append("svg:path")
                         .attr({
                             d: lineFun(wd),
@@ -399,18 +607,20 @@ mist.directive("simpleChart", function ($window, WeatherService) {
                                     .style("opacity", 0);
                         });
                 function mmP() {
-                    console.log("Mouse Move");
+//                    console.log("Mouse Move");
                 }
             }
 
-            WeatherService.get5dayData().then(
+
+
+
+
+
+            WeatherService.get5dayData(scope.selectedcity).then(
                     function (data) {
-                        console.log(data);
                         for (var i = 0; i < data.list.length; i++) {
                             var t = data.list[i];
-                            //(data.list[i].dt_txt).replace(/ /g, "T")
                             scope.lineData.push({date: gDate(t.dt), temp: (t.main.temp - 272.15)});
-                            //  -457.87
                         }
                         drawLineChart();
                     },
@@ -432,6 +642,17 @@ function KToC(K, U) {
 
 
 }
+function FtoC(TF) {
+
+    return ((TF - 32) / (9 / 5));
+}
+
+function CtoF(TC) {
+
+    return ((TC * 9 / 5) + 32);
+
+}
+
 //ACtrl
 mist.controller("ACtrl", function ($scope, WeatherService) {
     $scope.lineData = new Array();
@@ -439,7 +660,7 @@ mist.controller("ACtrl", function ($scope, WeatherService) {
     // create a message to display in our view
     $scope.title = 'Weather';
     $scope.message = 'Weather in your city';
-    $scope.selected;
+    $scope.selectedcity = "Chicago";
 //    $scope.weather16 = null;
     $scope.cities = {
         "Chicago": "Chicago, IL",
@@ -458,7 +679,7 @@ mist.controller("ACtrl", function ($scope, WeatherService) {
             //(K × 1.8) - 459.67
         }
     });
-    WeatherService.getData().then(
+    WeatherService.getData($scope.selectedcity).then(
             function (data) {
                 //initialize data
                 //Convert temp to Farenheit
@@ -468,10 +689,13 @@ mist.controller("ACtrl", function ($scope, WeatherService) {
                     }
                 });
                 $scope.weather16 = data;
-//                console.log(data);
+
+            },
+            function (err) {
+                console.log("Sorry we encountered an error " + err);
             }
     );
-    WeatherService.getTodaysData().then(
+    WeatherService.getTodaysData($scope.selectedcity).then(
             function (data) {
                 $scope.weather = data;
                 for (var key in data.main) {
@@ -479,6 +703,9 @@ mist.controller("ACtrl", function ($scope, WeatherService) {
                         data.main[key] = Math.round(KToC(data.main[key], "C"));
                     }
                 }
+            },
+            function (err) {
+                console.log("Sorry we encountered an error " + err);
             }
     );
 });
@@ -508,27 +735,30 @@ mist.controller("CCtrl", function ($scope) {
     $scope.images = [
         {category: 'High', image: 'img/1.png', description: 'Random Photo', stars: '4/5'},
         {category: 'High', image: 'img/2.png', description: 'Sports Photo', stars: '4/5'},
-        {category: 'High', image: 'img/3.png', description: 'Sports Photo', stars: '5/5'},
-        {category: 'High', image: 'img/4.png', description: 'Sports Photo', stars: '4/5'},
-        {category: 'High', image: 'img/5.png', description: 'Sports Photo', stars: '5/5'},
-        {category: 'Medium', image: 'img/6.png', description: 'Sports Photo', stars: '3/5'},
-        {category: 'Medium', image: 'img/7.png', description: 'Sports Photo', stars: '3/5'},
-        {category: 'Medium', image: 'img/8.png', description: 'Sports Photo', stars: '3/5'},
-        {category: 'Medium', image: 'img/9.png', description: 'Sports Photo', stars: '3/5'},
-        {category: 'Medium', image: 'img/10.png', description: 'Sports Photo', stars: '3/5'},
-        {category: 'Low', image: 'img/11.png', description: 'Sports Photo', stars: '2/5'},
-        {category: 'Low', image: 'img/12.png', description: 'Sports Photo', stars: '2/5'},
-        {category: 'Low', image: 'img/13.png', description: 'Sports Photo', stars: '2/5'},
-        {category: 'Low', image: 'img/14.png', description: 'Sports Photo', stars: '2/5'},
-        {category: 'Low', image: 'img/15.png', description: 'Sports Photo', stars: '2/5'},
-        {category: 'None', image: 'img/16.png', description: 'Sports Photo', stars: '0/5'},
-        {category: 'None', image: 'img/17.png', description: 'Sports Photo', stars: '0/5'},
-        {category: 'None', image: 'img/18.png', description: 'Sports Photo', stars: '0/5'},
-        {category: 'None', image: 'img/19.png', description: 'Sports Photo', stars: '0/5'},
-        {category: 'None', image: 'img/20.png', description: 'Sports Photo', stars: '0/5'},
+        {category: 'High', image: 'img/3.png', description: 'Fashion Photo', stars: '5/5'},
+        {category: 'High', image: 'img/4.png', description: 'Health Photo', stars: '4/5'},
+        {category: 'High', image: 'img/5.png', description: 'Food Photo', stars: '5/5'},
+        {category: 'Medium', image: 'img/6.png', description: 'ApplePhoto', stars: '3/5'},
+        {category: 'Medium', image: 'img/7.png', description: 'Basket Photo', stars: '3/5'},
+        {category: 'Medium', image: 'img/8.png', description: 'Caddy Photo', stars: '3/5'},
+        {category: 'Medium', image: 'img/9.png', description: 'Dog Photo', stars: '3/5'},
+        {category: 'Medium', image: 'img/10.png', description: 'Eagle Photo', stars: '3/5'},
+        {category: 'Low', image: 'img/11.png', description: 'Fanta Photo', stars: '2/5'},
+        {category: 'Low', image: 'img/12.png', description: 'Green Photo', stars: '2/5'},
+        {category: 'Low', image: 'img/13.png', description: 'High Top Photo', stars: '2/5'},
+        {category: 'Low', image: 'img/14.png', description: 'Iowa Photo', stars: '2/5'},
+        {category: 'Low', image: 'img/15.png', description: 'Jack Photo', stars: '2/5'},
+        {category: 'None', image: 'img/16.png', description: 'Kilt Photo', stars: '0/5'},
+        {category: 'None', image: 'img/17.png', description: 'Lunar Photo', stars: '0/5'},
+        {category: 'None', image: 'img/18.png', description: 'Moon Photo', stars: '0/5'},
+        {category: 'None', image: 'img/19.png', description: 'Noon Photo', stars: '0/5'},
+        {category: 'None', image: 'img/20.png', description: 'Park Photo', stars: '0/5'}
     ];
-    $scope.currentImage = _.first($scope.images);
-    $scope.imageCategories = _.uniq(_.pluck($scope.images, 'category'));
+//    $scope.currentImage = _.first($scope.images);
+    $scope.currentImage = $scope.images[0];
+//    $scope.imageCategories = _.uniq(_.pluck($scope.images, 'category'));
+    $scope.imageCategories = ["High", "Medium", "Low", "None"];
+
     $scope.size = "medium";
 
     $scope.s = function () {
@@ -542,17 +772,36 @@ mist.controller("CCtrl", function ($scope) {
     $scope.l = function () {
         $scope.size = "large";
     };
+    $scope.iWidth = 5;
+    $scope.iGScale = 0;
+//filter: grayscale(75%); -webkit-filter: grayscale(75%);
+    $scope.myStyle = {'width': ($scope.iWidth * 50) + "px",
+        '-webkit-filter': 'grayscale(' + $scope.iGScale + '%)',
+        'filter': 'grayscale(' + $scope.iGScale + '%)'
+    };
 
+    $scope.changeWidth = function () {
+        $scope.myStyle = {'width': ($scope.iWidth * 50) + "px",
+            '-webkit-filter': 'grayscale(' + $scope.iGScale + '%)',
+            'filter': 'grayscale(' + $scope.iGScale + '%)'};
+    };
+
+    $scope.ciGScale = function () {
+        $scope.myStyle = {'width': ($scope.iWidth * 50) + "px",
+            '-webkit-filter': 'grayscale(' + $scope.iGScale + '%)',
+            'filter': 'grayscale(' + $scope.iGScale + '%)'};
+    };
 
     $scope.setCurrentImage = function (image) {
-//        console.log("clicked current image");
         $scope.currentImage = image;
     };
     $scope.valueSelected = function (value) {
-//        console.log(value);
+
         if (value === null) {
             $scope.catselect = undefined;
         }
+
+        console.log($scope.catselect);
     };
     //        http://jsfiddle.net/xujihui1985/9yk7a6v3/2/
 

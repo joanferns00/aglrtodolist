@@ -5,20 +5,35 @@ To change this template file, choose Tools | Templates
 and open the template in the editor.
 --><h1 ng-bind="title"></h1>
 
-<p><span ng-bind="message"><strong></strong></span>: <a ng-click="s()">Small</a> | <a ng-click="m()">Medium</a> | <a ng-click="l()">Large</a></p>
+<!--<p><span ng-bind="message"><strong></strong></span>: <a ng-click="s()">Small</a> | <a ng-click="m()">Medium</a> | <a ng-click="l()">Large</a></p>-->
+<div>
+    Image Size <input ng-change="changeWidth()" type="range" name="points" min="0" max="10" step="1" ng-model="iWidth">
+    Set grey-scale <input ng-change="ciGScale()" type="range" name="gs" min="0" max="100" step="1" ng-model="iGScale">
+</div>
+ <!--ng-class="size"-->
 
-    <img ng-src="{{currentImage.image}}" alt="{{currentImage.description}}" ng-class="size"/>
+ <div style="width: 600px; height: 370px;">
+     <img ng-src="{{currentImage.image}}" alt="{{currentImage.description}}" ng-style="myStyle" />
+ </div>
     <h3>{{currentImage.description}}</h3>
     <span>{{currentImage.stars}}</span>
+    <hr>
+    <span>Select a rating</span>
     <select ng-model="catselect"
            ng-options="category for category in imageCategories"
            ng-change="valueSelected(catselect)">
      <option value>All</option>
     </select>
 <!--<p>Select <input ng-model="categories"/></p>-->
-    <span>Select a rating</span>
+    
     <ul class="photosmenu">
-      <li ng-repeat="image in images | filter : catselect" ng-click="setCurrentImage(image)">
-          <img ng-src="{{image.image}}" alt="{{image.description}}" width="300px"/>
+      <li ng-repeat="image in images |  filter :{category: catselect}" ng-click="setCurrentImage(image)">
+          <img ng-src="{{image.image}}" alt="{{image.stars}}" width="300px"/>
       </li>
     </ul><!-- End of List -->
+    
+    <!--http://stackoverflow.com/questions/14270897/capture-save-export-an-image-with-css-filter-effects-applied
+    http://www.techrepublic.com/blog/web-designer/css3-filter-effects-grayscale-invert-sepia-and-more/
+    http://www.html5rocks.com/en/tutorials/canvas/imagefilters/
+    -->
+    

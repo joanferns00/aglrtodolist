@@ -14,7 +14,7 @@
                 <div class="box">
                     
             <h4>{{i.dt | mydate}}</h4>
-            <p>{{i.temp.day}}</p>
+            <p>{{i.temp.day}}{{tempUnit}}</p>
             <figure>
                 <img ng-src="http://openweathermap.org/img/w/{{i.weather[0].icon}}.png"
                      title="{{i.weather[0].description}}" 
