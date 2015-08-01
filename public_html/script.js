@@ -501,7 +501,6 @@ mist.directive("simpleChart", function ($window, WeatherService) {
                         .attr("height", height)
                         .append('g')
                         .attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')');
-
             }
 
             function emptyLineChart() {
@@ -532,12 +531,13 @@ mist.directive("simpleChart", function ($window, WeatherService) {
                         .orient("bottom")
                         .ticks(d3.time.hour, 3)
                         .tickFormat(d3.time.format("%H:%M"))
-                        .tickSize(0)
+                        .tickSize(-height + margin.top + margin.bottom, 0, 0)
                         .tickPadding(1)
                         ;
                 var yAxisGen = d3.svg.axis()
                         .scale(yScale)
                         .orient("left")
+                        .tickSize(-width + margin.left + margin.right, 0, 0)
                         .ticks(10)
                         ;
                 var lineFun = d3.svg.line()
