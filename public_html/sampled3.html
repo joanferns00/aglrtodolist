@@ -43,10 +43,10 @@ and open the template in the editor.
                 stroke: steelblue;
                 stroke-width: 1.5px;
             }
-            
+
             .plot {
                 fill: rgba(250, 250, 255, 0.6);
-            }            
+            }
 
 
             div.tooltip {
@@ -73,10 +73,10 @@ and open the template in the editor.
             function gDate(date) {
                 return new Date(date * 1000);
             }
-            
-function gdt(date) {
-    return date.toLocaleTimeString() + " " + date.toLocaleDateString();
-}            
+
+            function gdt(date) {
+                return date.toLocaleTimeString() + " " + date.toLocaleDateString();
+            }
 
             var data = [{"date": gDate(1435734000), "total": 3},
                 {"date": gDate(1435744800), "total": 8},
@@ -116,26 +116,26 @@ function gdt(date) {
                     .y(function (d) {
                         return y(d.total);
                     }).interpolate("cardinal");
-                    
+
             var zoom = d3.behavior.zoom()
                     .x(x)
 //            .scaleExtent([1, 10])
                     //    .y(y)
                     .on("zoom", zoomed);
-            
+
             var svg = d3.select('body').append('svg')
                     .attr('class', 'chart')
                     .attr('width', width)
                     .attr('height', height)
                     .append('g')
                     .attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')')
-                    .call(zoom);     
+                    .call(zoom);
             //so that it catches all the events in the svg.
             svg.append("svg:rect")
                     .attr("width", width)
                     .attr("height", height)
-                    .attr("class", "plot");            
-            
+                    .attr("class", "plot");
+
             var make_x_axis = function () {
                 return d3.svg.axis()
                         .scale(x)
@@ -152,7 +152,7 @@ function gdt(date) {
                         .orient('left')
                         .tickSize(-width + margin.left + margin.right, 0, 0)
                         .tickPadding(8);
-            };            
+            };
 
 
             var xAxis = d3.svg.axis()
@@ -179,8 +179,8 @@ function gdt(date) {
             svg.append('g')
                     .attr('class', 'y axis')
                     .call(yAxis);
-            
-            
+
+
             svg.append("g")
                     .attr("class", "x grid")
                     .attr("transform", "translate(0," + height + ")")
@@ -192,25 +192,25 @@ function gdt(date) {
                     .attr("class", "y grid")
                     .call(make_y_axis()
                             .tickSize(-width + margin.left + margin.right, 0, 0)
-                            .tickFormat(""));     
-            //Clip out the extra information show on either sides of the x-axis        
+                            .tickFormat(""));
+            //Clip out the extra information show on either sides of the x-axis
             var clip = svg.append("svg:clipPath")
                     .attr("id", "clip")
                     .append("svg:rect")
-                    .attr("x", 0)
-                    .attr("y", 0)
+//                    .attr("x", 0)
+//                    .attr("y", 0)
                     .attr("width", width - margin.left - margin.right)
-                    .attr("height", height - margin.top - margin.bottom);    
-            
-            var chartBody = svg.append("g")
+                    .attr("height", height - margin.top - margin.bottom);
+
+            var chartBody = svg.append("svg:g")
                     .attr("clip-path", "url(#clip)");
 
             chartBody.append("path")
                     .datum(data)
                     .attr("class", "line")
-                    .attr("d", line);   
-            
-            
+                    .attr("d", line);
+
+
             var bars = svg.selectAll('.chart')
                     .data(data)
                     .enter()
@@ -227,53 +227,53 @@ function gdt(date) {
                     .attr('height', function (d) {
                         return height - margin.top - margin.bottom - y(d.total);
                     });
-              
-            
+
+
             var div = d3.select("body").append("div")
                     .attr("class", "tooltip")
-                    .style("opacity", 0);   
-            
-                var dots = svg.selectAll(".chart").data(data)
-                        .enter()
-                        .append("circle")
-                        .attr("r", 4)
-                        .attr("cx", function (dd) {
-                            return x(dd.date);
-                        })
-                        .attr("cy", function (dd) {
-                            return y(dd.total);
-                        })
-                        .style("fill", "none")
-                        .style("pointer-events", "all")
-                        .attr("stroke", "black")
-                        .on("mousemove", mmP)
-                        .on("mouseover", function (d) {
+                    .style("opacity", 0);
 
-                            div.transition()
-                                    .duration(200)
-                                    .style("opacity", .9);
-                            div.html(gdt(d.date) + "<br/>" + Math.round(d.total) + "C")
-                                    .style("left", (d3.event.pageX) + "px")
-                                    .style("top", (d3.event.pageY - 28) + "px");
-                        })
-                        .on("mouseout", function (d) {
-                            div.transition()
-                                    .duration(500)
-                                    .style("opacity", 0);
-                        });
-                function mmP() {
+            var dots = svg.selectAll(".chart").data(data)
+                    .enter()
+                    .append("circle")
+                    .attr("r", 4)
+                    .attr("cx", function (dd) {
+                        return x(dd.date);
+                    })
+                    .attr("cy", function (dd) {
+                        return y(dd.total);
+                    })
+                    .style("fill", "none")
+                    .style("pointer-events", "all")
+                    .attr("stroke", "black")
+                    .on("mousemove", mmP)
+                    .on("mouseover", function (d) {
+
+                        div.transition()
+                                .duration(200)
+                                .style("opacity", .9);
+                        div.html(gdt(d.date) + "<br/>" + Math.round(d.total) + "C")
+                                .style("left", (d3.event.pageX) + "px")
+                                .style("top", (d3.event.pageY - 28) + "px");
+                    })
+                    .on("mouseout", function (d) {
+                        div.transition()
+                                .duration(500)
+                                .style("opacity", 0);
+                    });
+            function mmP() {
 //                    console.log("Mouse Move");
-                }            
-            
-d3.select("button").on("click", reset);            
-function reset() {
-    
-  svg.call(zoom
-      .x(x.domain([data[0].date, d3.time.hour.offset(data[data.length - 1].date, 1)]))
+            }
+
+            d3.select("button").on("click", reset);
+            function reset() {
+
+                svg.call(zoom
+                        .x(x.domain([data[0].date, d3.time.hour.offset(data[data.length - 1].date, 1)]))
 //      .y(y.domain([-height / 2, height / 2]))
-      .event);    
-}
-            
+                        .event);
+            }
+
 //function reset() {
 //  d3.transition().duration(750).tween("zoom", function() {
 //    var ix = d3.interpolate(x.domain(), [-width / 2, width / 2]),
@@ -283,8 +283,8 @@ function reset() {
 //      zoomed();
 //    };
 //  });
-//}            
-            
+//}
+
 //            svg.append("path")
 //                    .datum(data)
 //                    .attr("d", line)
@@ -309,7 +309,7 @@ function reset() {
 //                    .attr('height', function (d) {
 //                        return height - margin.top - margin.bottom - y(d.total);
 //                    });
-//            
+//
 
 
 
@@ -324,7 +324,7 @@ function reset() {
                         .call(make_x_axis()
                                 .tickSize(-height, 0, 0)
                                 .tickFormat(""));
-                        //Set the y-axis
+                //Set the y-axis
                 svg.select(".y.grid")
                         .call(make_y_axis()
                                 .tickSize(-width, 0, 0)
@@ -332,8 +332,8 @@ function reset() {
                 svg.select(".line")
                         .attr("class", "line")
                         .attr("d", line);
-        	bars.attr("transform", "translate(" + d3.event.translate[0]+",0)scale(" + d3.event.scale + ",1)");
-                dots.attr("transform", "translate(" + d3.event.translate[0]+",0)scale(" + d3.event.scale + ",1)");
+                bars.attr("transform", "translate(" + d3.event.translate[0] + ",0)scale(" + d3.event.scale + ",1)");
+                dots.attr("transform", "translate(" + d3.event.translate[0] + ",0)scale(" + d3.event.scale + ",1)");
             }
         </script>
     </body>

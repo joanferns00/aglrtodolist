@@ -8,8 +8,14 @@ and open the template in the editor.
 
 <label ng-bind="message" for="selectcity"></label><select name="selectcity" ng-model="selectedcity" ng-options="key as value for (key , value) in cities"></select>
 
+
+
+
 <input type="radio" ng-model="tempformat" value="C"> Celcius
 <input type="radio" ng-model="tempformat" value="F"> Farenheit
+
+
+
 <div>
     <weather-today info="weather" tempformat="tempformat" selectedcity="selectedcity"></weather-today>
     <weather-six info="weather16" tempformat="tempformat" selectedcity="selectedcity"></weather-six>
@@ -17,7 +23,10 @@ and open the template in the editor.
 <hr>
 <h2>Hour-by-hour forecast</h2>
 <!--<my-customer></my-customer>-->
+<button id="resetgraph">Reset</button>
 <div simple-chart chart-data="lineData"></div>
+<hr>
+
 
 
 
