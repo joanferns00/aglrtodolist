@@ -16,36 +16,91 @@ and open the template in the editor.
                 font-size: 10px;
             }
 
+            .axis .tick:first-child line{
+                opacity: 1.0;
+                stroke: #333;
+            }
+
+            .axis .tick line{
+                opacity: 0.7;
+                stroke: lightgrey;
+            }
+
+            .axis path{
+                stroke-width: 0;
+            }
             .axis path, .axis line {
                 fill: none;
                 stroke: #000;
                 shape-rendering: crispEdges;
             }
-
             .bar {
                 fill: steelblue;
             }
+
+            .line {
+                fill: none;
+                stroke: steelblue;
+                stroke-width: 1.5px;
+            }
+            
+            .plot {
+                fill: rgba(250, 250, 255, 0.6);
+            }            
+
+
+            div.tooltip {
+                position: absolute;
+                text-align: center;
+                width: 60px;
+                height: 28px;
+                padding: 2px;
+                font: 8px sans-serif;
+                background: lightsteelblue;
+                border: 0px;
+                border-radius: 8px;
+                pointer-events: none;
+            }
+
+
+
         </style>
     </head>
     <body>
+        <button>Reset</button>
         <div>TODO write content</div>
         <script>
-            var data = [{"date": 1435708800, "total": 3},
-                {"date": 1435719600, "total": 8},
-                {"date": 1435730400, "total": 2},
-                {"date": 1435741200, "total": 10},
-                {"date": 1435752000, "total": 3},
-                {"date": 1435762800, "total": 20},
-                {"date": 1435773600, "total": 12}];
+            function gDate(date) {
+                return new Date(date * 1000);
+            }
+            
+function gdt(date) {
+    return date.toLocaleTimeString() + " " + date.toLocaleDateString();
+}            
+
+            var data = [{"date": gDate(1435734000), "total": 3},
+                {"date": gDate(1435744800), "total": 8},
+                {"date": gDate(1435755600), "total": 2},
+                {"date": gDate(1435766400), "total": 10},
+                {"date": gDate(1435777200), "total": 3},
+                {"date": gDate(1435788000), "total": 20},
+                {"date": gDate(1435798800), "total": 12},
+                {"date": gDate(1435809600), "total": 5},
+                {"date": gDate(1435820400), "total": 1},
+                {"date": gDate(1435831200), "total": 10},
+                {"date": gDate(1435842000), "total": 8},
+                {"date": gDate(1435852800), "total": 6},
+                {"date": gDate(1435863600), "total": 13},
+                {"date": gDate(1435874400), "total": 7},
+                {"date": gDate(1435885200), "total": 8},
+                {"date": gDate(1435896000), "total": 18},
+                {"date": gDate(1435906800), "total": 15}];
 
             var margin = {top: 40, right: 40, bottom: 40, left: 40},
-            width = 600,
-                    height = 500;
-            
-          
+            width = 1200, height = 500;
 
             var x = d3.time.scale()
-                    .domain([new Date(data[0].date), d3.time.day.offset(new Date(data[data.length - 1].date), 1)])
+                    .domain([data[0].date, d3.time.hour.offset(data[data.length - 1].date, 1)])
                     .rangeRound([0, width - margin.left - margin.right]);
 
             var y = d3.scale.linear()
@@ -60,31 +115,61 @@ and open the template in the editor.
                     })
                     .y(function (d) {
                         return y(d.total);
-                    }).interpolate("basis");
-            ;
-
-            var xAxis = d3.svg.axis()
-                    .scale(x)
-                    .orient('bottom')
-
-                        .ticks(d3.time.hour, 3)
-                        .tickFormat(d3.time.format("%a %d %H:%M"))
-//                    .ticks(d3.time.days, 1)
-//                    .tickFormat(d3.time.format('%a %d'))
-                    .tickSize(0)
-                    .tickPadding(8);
-
-            var yAxis = d3.svg.axis()
-                    .scale(y)
-                    .orient('left')
-                    .tickPadding(8);
-
+                    }).interpolate("cardinal");
+                    
+            var zoom = d3.behavior.zoom()
+                    .x(x)
+//            .scaleExtent([1, 10])
+                    //    .y(y)
+                    .on("zoom", zoomed);
+            
             var svg = d3.select('body').append('svg')
                     .attr('class', 'chart')
                     .attr('width', width)
                     .attr('height', height)
                     .append('g')
-                    .attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')');
+                    .attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')')
+                    .call(zoom);     
+            //so that it catches all the events in the svg.
+            svg.append("svg:rect")
+                    .attr("width", width)
+                    .attr("height", height)
+                    .attr("class", "plot");            
+            
+            var make_x_axis = function () {
+                return d3.svg.axis()
+                        .scale(x)
+                        .orient('bottom')
+                        .ticks(d3.time.hour, 3)
+                        .tickFormat(d3.time.format("%b %d %H:%M"))
+                        .tickSize(-height + margin.top + margin.bottom, 0, 0)
+                        .tickPadding(8);
+            };
+
+            var make_y_axis = function () {
+                return d3.svg.axis()
+                        .scale(y)
+                        .orient('left')
+                        .tickSize(-width + margin.left + margin.right, 0, 0)
+                        .tickPadding(8);
+            };            
+
+
+            var xAxis = d3.svg.axis()
+                    .scale(x)
+                    .orient('bottom')
+                    .ticks(d3.time.hour, 3)
+//                        .tickFormat(d3.time.format("%b %d %H:%M"))
+//                    .ticks(d3.time.days, 1)
+//                    .tickFormat(d3.time.format('%a %d'))
+                    .tickSize(-height + margin.top + margin.bottom, 0, 0)
+                    .tickPadding(8);
+
+            var yAxis = d3.svg.axis()
+                    .scale(y)
+                    .orient('left')
+                    .tickSize(-width + margin.left + margin.right, 0, 0)
+                    .tickPadding(8);
 
             svg.append('g')
                     .attr('class', 'x axis')
@@ -94,23 +179,46 @@ and open the template in the editor.
             svg.append('g')
                     .attr('class', 'y axis')
                     .call(yAxis);
+            
+            
+            svg.append("g")
+                    .attr("class", "x grid")
+                    .attr("transform", "translate(0," + height + ")")
+                    .call(make_x_axis()
+                            .tickSize(-height + margin.top + margin.bottom, 0, 0)
+                            .tickFormat(""));
 
-//            svg.append("path")
-//                    .datum(data)
-//                    .attr("d", line)
-//                    .attr('stroke', 'blue')
-//                    .attr('stroke-width', 2)
-//                    .attr('fill', 'none');
+            svg.append("g")
+                    .attr("class", "y grid")
+                    .call(make_y_axis()
+                            .tickSize(-width + margin.left + margin.right, 0, 0)
+                            .tickFormat(""));     
+            //Clip out the extra information show on either sides of the x-axis        
+            var clip = svg.append("svg:clipPath")
+                    .attr("id", "clip")
+                    .append("svg:rect")
+                    .attr("x", 0)
+                    .attr("y", 0)
+                    .attr("width", width - margin.left - margin.right)
+                    .attr("height", height - margin.top - margin.bottom);    
+            
+            var chartBody = svg.append("g")
+                    .attr("clip-path", "url(#clip)");
 
-
-
-            svg.selectAll('.chart')
+            chartBody.append("path")
+                    .datum(data)
+                    .attr("class", "line")
+                    .attr("d", line);   
+            
+            
+            var bars = svg.selectAll('.chart')
                     .data(data)
                     .enter()
                     .append('rect')
                     .attr('class', 'bar')
                     .attr('x', function (d) {
-                        return x(new Date(d.date));
+                        console.log(d.date);
+                        return x(d.date);
                     })
                     .attr('y', function (d) {
                         return height - margin.top - margin.bottom - (height - margin.top - margin.bottom - y(d.total));
@@ -119,8 +227,114 @@ and open the template in the editor.
                     .attr('height', function (d) {
                         return height - margin.top - margin.bottom - y(d.total);
                     });
+              
+            
+            var div = d3.select("body").append("div")
+                    .attr("class", "tooltip")
+                    .style("opacity", 0);   
+            
+                var dots = svg.selectAll(".chart").data(data)
+                        .enter()
+                        .append("circle")
+                        .attr("r", 4)
+                        .attr("cx", function (dd) {
+                            return x(dd.date);
+                        })
+                        .attr("cy", function (dd) {
+                            return y(dd.total);
+                        })
+                        .style("fill", "none")
+                        .style("pointer-events", "all")
+                        .attr("stroke", "black")
+                        .on("mousemove", mmP)
+                        .on("mouseover", function (d) {
+
+                            div.transition()
+                                    .duration(200)
+                                    .style("opacity", .9);
+                            div.html(gdt(d.date) + "<br/>" + Math.round(d.total) + "C")
+                                    .style("left", (d3.event.pageX) + "px")
+                                    .style("top", (d3.event.pageY - 28) + "px");
+                        })
+                        .on("mouseout", function (d) {
+                            div.transition()
+                                    .duration(500)
+                                    .style("opacity", 0);
+                        });
+                function mmP() {
+//                    console.log("Mouse Move");
+                }            
+            
+d3.select("button").on("click", reset);            
+function reset() {
+    
+  svg.call(zoom
+      .x(x.domain([data[0].date, d3.time.hour.offset(data[data.length - 1].date, 1)]))
+//      .y(y.domain([-height / 2, height / 2]))
+      .event);    
+}
+            
+//function reset() {
+//  d3.transition().duration(750).tween("zoom", function() {
+//    var ix = d3.interpolate(x.domain(), [-width / 2, width / 2]),
+//        iy = d3.interpolate(y.domain(), [-height / 2, height / 2]);
+//    return function(t) {
+//      zoom.x(x.domain(ix(t))).y(y.domain(iy(t)));
+//      zoomed();
+//    };
+//  });
+//}            
+            
+//            svg.append("path")
+//                    .datum(data)
+//                    .attr("d", line)
+//                    .attr('stroke', 'blue')
+//                    .attr('stroke-width', 2)
+//                    .attr('fill', 'none');
+//
+//
+//            svg.selectAll('.chart')
+//                    .data(data)
+//                    .enter()
+//                    .append('rect')
+//                    .attr('class', 'bar')
+//                    .attr('x', function (d) {
+//                        console.log(d.date);
+//                        return x(d.date);
+//                    })
+//                    .attr('y', function (d) {
+//                        return height - margin.top - margin.bottom - (height - margin.top - margin.bottom - y(d.total));
+//                    })
+//                    .attr('width', 10)
+//                    .attr('height', function (d) {
+//                        return height - margin.top - margin.bottom - y(d.total);
+//                    });
+//            
 
 
+
+            function zoomed() {
+//                console.log(d3.event.translate);
+//                console.log(d3.event.scale);
+//Call the x-axis
+                svg.select(".x.axis").call(xAxis);
+                svg.select(".y.axis").call(yAxis);
+                //Set the x-axis
+                svg.select(".x.grid")
+                        .call(make_x_axis()
+                                .tickSize(-height, 0, 0)
+                                .tickFormat(""));
+                        //Set the y-axis
+                svg.select(".y.grid")
+                        .call(make_y_axis()
+                                .tickSize(-width, 0, 0)
+                                .tickFormat(""));
+                svg.select(".line")
+                        .attr("class", "line")
+                        .attr("d", line);
+        	bars.attr("transform", "translate(" + d3.event.translate[0]+",0)scale(" + d3.event.scale + ",1)");
+                dots.attr("transform", "translate(" + d3.event.translate[0]+",0)scale(" + d3.event.scale + ",1)");
+            }
         </script>
     </body>
 </html>

@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<!--
+ This program is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License, as published by the Free Software Foundation and
+ available at http://www.fsf.org/licensing/licenses/lgpl.html,
+ version 2.1 or above.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU Lesser General Public License for more details.
+
+Copyright (c) 2001-2015 StrongAuth, Inc.
+
+$Date$
+$Revision$
+$Author$
+$URL$
+********************************************* 
+                    888
+                    888
+                    888
+  88888b.   .d88b.  888888  .d88b.  .d8888b
+  888 "88b d88""88b 888    d8P  Y8b 88K
+  888  888 888  888 888    88888888 "Y8888b.
+  888  888 Y88..88P Y88b.  Y8b.          X88
+  888  888  "Y88P"   "Y888  "Y8888   88888P'
+
+ ********************************************* 
+ DESCRIPTION 
+-->
+<html>
+    <head>
+        <title>TODO supply a title</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            body {
+                font: 10px sans-serif;
+            }
+            .plot {
+                fill: rgba(250, 250, 255, 0.6);
+            }
+            .grid .tick {
+                stroke: lightgrey;
+                opacity: 0.7;
+            }
+            .grid path {
+                stroke-width: 0;
+            }
+            .axis path, .axis line {
+                fill: none;
+                stroke: #000;
+                shape-rendering: crispEdges;
+            }
+            .x.axis path {
+                display: none;
+            }
+            .line {
+                fill: none;
+                stroke: steelblue;
+                stroke-width: 1.5px;
+            }
+
+        </style>
+    </head>
+    <body>
+        <div>TODO write content</div>
+        <!--http://jsfiddle.net/KSAbK/1/-->
+        <div id="chart"></div>
+        <script type="text/javascript"  src="js/d3.js"></script>
+        <script>
+            function gDate(date) {
+                return new Date(date * 1000);
+            }
+
+            var data = [{"date": gDate(1435734000), "total": 3},
+                {"date": gDate(1435744800), "total": 8},
+                {"date": gDate(1435755600), "total": 2},
+                {"date": gDate(1435766400), "total": 10},
+                {"date": gDate(1435777200), "total": 3},
+                {"date": gDate(1435788000), "total": 20},
+                {"date": gDate(1435798800), "total": 12},
+                {"date": gDate(1435809600), "total": 5},
+                {"date": gDate(1435820400), "total": 1},
+                {"date": gDate(1435831200), "total": 10},
+                {"date": gDate(1435842000), "total": 8},
+                {"date": gDate(1435852800), "total": 6},
+                {"date": gDate(1435863600), "total": 13},
+                {"date": gDate(1435874400), "total": 7},
+                {"date": gDate(1435885200), "total": 8},
+                {"date": gDate(1435896000), "total": 18},
+                {"date": gDate(1435906800), "total": 15}];
+
+            margin = {
+                top: 20,
+                right: 20,
+                bottom: 20,
+                left: 45
+            };
+
+            width = 400 - margin.left - margin.right;
+            height = 200 - margin.top - margin.bottom;
+
+            var x = d3.time.scale()
+                    .domain(d3.extent(data, function (d) {
+                        return d.date;
+                    }))
+                    .range([0, width]);
+
+            var y = d3.scale.linear()
+                    .domain(d3.extent(data, function (d) {
+                        return d.total;
+                    }))
+                    .range([height, 0]);
+
+            var line = d3.svg.line()
+                    .x(function (d) {
+                        return x(d.date);
+                    })
+                    .y(function (d) {
+                        return y(d.total);
+                    });
+
+            var zoom = d3.behavior.zoom()
+                    .x(x)
+//    .y(y)
+                    .on("zoom", zoomed);
+
+            svg = d3.select('#chart')
+                    .append("svg:svg")
+                    .attr('width', width + margin.left + margin.right)
+                    .attr('height', height + margin.top + margin.bottom)
+                    .append("svg:g")
+                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+                    .call(zoom);
+
+            svg.append("svg:rect")
+                    .attr("width", width)
+                    .attr("height", height)
+                    .attr("class", "plot");
+
+            var make_x_axis = function () {
+                return d3.svg.axis()
+                        .scale(x)
+                        .orient("bottom")
+                        .ticks(5);
+            };
+
+            var make_y_axis = function () {
+                return d3.svg.axis()
+                        .scale(y)
+                        .orient("left")
+                        .ticks(5);
+            };
+
+            var xAxis = d3.svg.axis()
+                    .scale(x)
+                    .orient("bottom")
+                    .ticks(5);
+
+
+            var yAxis = d3.svg.axis()
+                    .scale(y)
+                    .orient("left")
+                    .ticks(5);
+
+            svg.append("svg:g")
+                    .attr("class", "x axis")
+                    .attr("transform", "translate(0, " + height + ")")
+                    .call(xAxis);
+
+            svg.append("g")
+                    .attr("class", "y axis")
+                    .call(yAxis);
+
+            svg.append("g")
+                    .attr("class", "x grid")
+                    .attr("transform", "translate(0," + height + ")")
+                    .call(make_x_axis()
+                            .tickSize(-height, 0, 0)
+                            .tickFormat(""));
+
+            svg.append("g")
+                    .attr("class", "y grid")
+                    .call(make_y_axis()
+                            .tickSize(-width, 0, 0)
+                            .tickFormat(""));
+
+            var clip = svg.append("svg:clipPath")
+                    .attr("id", "clip")
+                    .append("svg:rect")
+                    .attr("x", 0)
+                    .attr("y", 0)
+                    .attr("width", width)
+                    .attr("height", height);
+
+            var chartBody = svg.append("g")
+                    .attr("clip-path", "url(#clip)");
+
+            chartBody.append("svg:path")
+                    .datum(data)
+                    .attr("class", "line")
+                    .attr("d", line);
+
+            function zoomed() {
+                console.log(d3.event.translate);
+                console.log(d3.event.scale);
+                svg.select(".x.axis").call(xAxis);
+                svg.select(".y.axis").call(yAxis);
+                svg.select(".x.grid")
+                        .call(make_x_axis()
+                                .tickSize(-height, 0, 0)
+                                .tickFormat(""));
+                svg.select(".y.grid")
+                        .call(make_y_axis()
+                                .tickSize(-width, 0, 0)
+                                .tickFormat(""));
+                svg.select(".line")
+                        .attr("class", "line")
+                        .attr("d", line);
+            }
+
+        </script>
+    </body>
+</html>
